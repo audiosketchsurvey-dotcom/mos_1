@@ -1,1 +1,336 @@
-hello
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Audio-Image MOS Evaluation</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.stimulus {
+  margin-bottom: 50px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #ccc;
+}
+
+label {
+  display: block;
+  margin: 4px 0;
+}
+
+img {
+  max-width: 900px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+button {
+  font-size: 16px;
+  padding: 12px 30px;
+  margin: 30px 0;
+}
+</style>
+</head>
+
+<body>
+
+<h2>MOS Evaluation (Audio + Image)</h2>
+<p>
+본 실험은 <b>오디오의 품질</b>과 <b>이미지와 오디오의 관련성</b>을
+각각 1점부터 5점까지 평가하는 실험입니다.
+</p>
+
+<p>
+각 샘플은 <b>서로 비교하지 말고</b>, 해당 샘플의 타이밍 일치 정도만을 기준으로 
+<b>절대적인 점수</b>를 부여해 주세요.
+</p>
+
+<p><b>Audio quality</b></p>
+<ul>
+  <li>
+    5 (Excellent): 잡음이나 왜곡이 없는 자연스러운 오디오
+  </li>
+  <li>
+    4 (Good): 약간 부자연스러운 부분이 있으나 전반적으로 자연스러워 청취에 큰 방해가 되지 않음
+  </li>
+  <li>
+    3 (Fair): 부자연스러운 부분이 반복적으로 느껴지나 들을 만함
+  </li>
+  <li>
+    2 (Poor): 기계음 또는 왜곡이 자주 들리며 오디오를 인식하기 어려움
+  </li>
+  <li>
+    1 (Bad): 매우 부자연스럽고 오디오 품질이 낮음
+  </li>
+</ul>
+
+<p><b>Relevance (이미지–오디오 관련성)</b></p>
+<ul>
+  <li>
+    5 (Excellent): 생성된 오디오가
+    <b>타겟 이미지의 장면이나 상황과 매우 잘 부합</b>하며,
+    이미지에서 기대되는 소리를 자연스럽게 반영함
+  </li>
+  <li>
+    4 (Good): 이미지와 오디오가 전반적으로 잘 어울리나,
+    일부만 약간 어색함
+  </li>
+  <li>
+    3 (Fair): 이미지와 어느 정도 관련은 있으나,
+    명확하지 않거나 애매한 부분이 있음
+  </li>
+  <li>
+    2 (Poor): 이미지와 오디오의 관련성이 낮으며,
+    기대되는 소리와 다른 경우가 많음
+  </li>
+  <li>
+    1 (Bad): 생성된 오디오가
+    <b>타겟 이미지와 거의 관련이 없음</b>
+  </li>
+</ul>
+
+<p>
+각 음성은 <b>0초부터 10초까지 전체를 시청한 후</b> 평가해 주세요.
+</p>
+<p>
+⚠️ 실험이 종료되면 결과 파일이 <b>자동으로 다운로드</b>됩니다.  
+실험 도중 브라우저를 닫지 않도록 주의해 주세요.
+</p>
+<p>
+🎧 조용한 환경에서 <b>헤드폰 사용</b>을 권장하며, 가능한 한 좋은 음향 장비를 사용해 주세요.  
+단, 타이밍 평가 실험이므로 <b>블루투스 헤드폰/이어폰은 사용하지 마세요.</b>
+</p>
+
+
+<div id="container"></div>
+
+<button id="nextBtn">Next</button>
+
+<script>
+/********************************************************
+ * CONFIGURATION
+ ********************************************************/
+
+const ITEMS_PER_PAGE = 5;
+
+const stimuli = [
+  // 0_ts (v01 ~ v20)
+  { id: "v01", image: "./samples/image/0_ts/i_00.jpg", audio: "./samples/audio/0_ts/a_00.wav" },
+  { id: "v02", image: "./samples/image/0_ts/i_01.jpg", audio: "./samples/audio/0_ts/a_01.wav" },
+  { id: "v03", image: "./samples/image/0_ts/i_02.jpg", audio: "./samples/audio/0_ts/a_02.wav" },
+  { id: "v04", image: "./samples/image/0_ts/i_03.jpg", audio: "./samples/audio/0_ts/a_03.wav" },
+  { id: "v05", image: "./samples/image/0_ts/i_04.jpg", audio: "./samples/audio/0_ts/a_04.wav" },
+  { id: "v06", image: "./samples/image/0_ts/i_05.jpg", audio: "./samples/audio/0_ts/a_05.wav" },
+  { id: "v07", image: "./samples/image/0_ts/i_06.jpg", audio: "./samples/audio/0_ts/a_06.wav" },
+  { id: "v08", image: "./samples/image/0_ts/i_07.jpg", audio: "./samples/audio/0_ts/a_07.wav" },
+  { id: "v09", image: "./samples/image/0_ts/i_08.jpg", audio: "./samples/audio/0_ts/a_08.wav" },
+  { id: "v10", image: "./samples/image/0_ts/i_09.jpg", audio: "./samples/audio/0_ts/a_09.wav" },
+  { id: "v11", image: "./samples/image/0_ts/i_10.jpg", audio: "./samples/audio/0_ts/a_10.wav" },
+  { id: "v12", image: "./samples/image/0_ts/i_11.jpg", audio: "./samples/audio/0_ts/a_11.wav" },
+  { id: "v13", image: "./samples/image/0_ts/i_12.jpg", audio: "./samples/audio/0_ts/a_12.wav" },
+  { id: "v14", image: "./samples/image/0_ts/i_13.jpg", audio: "./samples/audio/0_ts/a_13.wav" },
+  { id: "v15", image: "./samples/image/0_ts/i_14.jpg", audio: "./samples/audio/0_ts/a_14.wav" },
+  { id: "v16", image: "./samples/image/0_ts/i_15.jpg", audio: "./samples/audio/0_ts/a_15.wav" },
+  { id: "v17", image: "./samples/image/0_ts/i_16.jpg", audio: "./samples/audio/0_ts/a_16.wav" },
+  { id: "v18", image: "./samples/image/0_ts/i_17.jpg", audio: "./samples/audio/0_ts/a_17.wav" },
+  { id: "v19", image: "./samples/image/0_ts/i_18.jpg", audio: "./samples/audio/0_ts/a_18.wav" },
+  { id: "v20", image: "./samples/image/0_ts/i_19.jpg", audio: "./samples/audio/0_ts/a_19.wav" },
+
+  // 1_rms (v21 ~ v40)
+  { id: "v21", image: "./samples/image/1_rms/i_00.jpg", audio: "./samples/audio/1_rms/a_00.wav" },
+  { id: "v22", image: "./samples/image/1_rms/i_01.jpg", audio: "./samples/audio/1_rms/a_01.wav" },
+  { id: "v23", image: "./samples/image/1_rms/i_02.jpg", audio: "./samples/audio/1_rms/a_02.wav" },
+  { id: "v24", image: "./samples/image/1_rms/i_03.jpg", audio: "./samples/audio/1_rms/a_03.wav" },
+  { id: "v25", image: "./samples/image/1_rms/i_04.jpg", audio: "./samples/audio/1_rms/a_04.wav" },
+  { id: "v26", image: "./samples/image/1_rms/i_05.jpg", audio: "./samples/audio/1_rms/a_05.wav" },
+  { id: "v27", image: "./samples/image/1_rms/i_06.jpg", audio: "./samples/audio/1_rms/a_06.wav" },
+  { id: "v28", image: "./samples/image/1_rms/i_07.jpg", audio: "./samples/audio/1_rms/a_07.wav" },
+  { id: "v29", image: "./samples/image/1_rms/i_08.jpg", audio: "./samples/audio/1_rms/a_08.wav" },
+  { id: "v30", image: "./samples/image/1_rms/i_09.jpg", audio: "./samples/audio/1_rms/a_09.wav" },
+  { id: "v31", image: "./samples/image/1_rms/i_10.jpg", audio: "./samples/audio/1_rms/a_10.wav" },
+  { id: "v32", image: "./samples/image/1_rms/i_11.jpg", audio: "./samples/audio/1_rms/a_11.wav" },
+  { id: "v33", image: "./samples/image/1_rms/i_12.jpg", audio: "./samples/audio/1_rms/a_12.wav" },
+  { id: "v34", image: "./samples/image/1_rms/i_13.jpg", audio: "./samples/audio/1_rms/a_13.wav" },
+  { id: "v35", image: "./samples/image/1_rms/i_14.jpg", audio: "./samples/audio/1_rms/a_14.wav" },
+  { id: "v36", image: "./samples/image/1_rms/i_15.jpg", audio: "./samples/audio/1_rms/a_15.wav" },
+  { id: "v37", image: "./samples/image/1_rms/i_16.jpg", audio: "./samples/audio/1_rms/a_16.wav" },
+  { id: "v38", image: "./samples/image/1_rms/i_17.jpg", audio: "./samples/audio/1_rms/a_17.wav" },
+  { id: "v39", image: "./samples/image/1_rms/i_18.jpg", audio: "./samples/audio/1_rms/a_18.wav" },
+  { id: "v40", image: "./samples/image/1_rms/i_19.jpg", audio: "./samples/audio/1_rms/a_19.wav" },
+
+  // 2_em (v41 ~ v60)
+  { id: "v41", image: "./samples/image/2_em/i_00.jpg", audio: "./samples/audio/2_em/a_00.wav" },
+  { id: "v42", image: "./samples/image/2_em/i_01.jpg", audio: "./samples/audio/2_em/a_01.wav" },
+  { id: "v43", image: "./samples/image/2_em/i_02.jpg", audio: "./samples/audio/2_em/a_02.wav" },
+  { id: "v44", image: "./samples/image/2_em/i_03.jpg", audio: "./samples/audio/2_em/a_03.wav" },
+  { id: "v45", image: "./samples/image/2_em/i_04.jpg", audio: "./samples/audio/2_em/a_04.wav" },
+  { id: "v46", image: "./samples/image/2_em/i_05.jpg", audio: "./samples/audio/2_em/a_05.wav" },
+  { id: "v47", image: "./samples/image/2_em/i_06.jpg", audio: "./samples/audio/2_em/a_06.wav" },
+  { id: "v48", image: "./samples/image/2_em/i_07.jpg", audio: "./samples/audio/2_em/a_07.wav" },
+  { id: "v49", image: "./samples/image/2_em/i_08.jpg", audio: "./samples/audio/2_em/a_08.wav" },
+  { id: "v50", image: "./samples/image/2_em/i_09.jpg", audio: "./samples/audio/2_em/a_09.wav" },
+  { id: "v51", image: "./samples/image/2_em/i_10.jpg", audio: "./samples/audio/2_em/a_10.wav" },
+  { id: "v52", image: "./samples/image/2_em/i_11.jpg", audio: "./samples/audio/2_em/a_11.wav" },
+  { id: "v53", image: "./samples/image/2_em/i_12.jpg", audio: "./samples/audio/2_em/a_12.wav" },
+  { id: "v54", image: "./samples/image/2_em/i_13.jpg", audio: "./samples/audio/2_em/a_13.wav" },
+  { id: "v55", image: "./samples/image/2_em/i_14.jpg", audio: "./samples/audio/2_em/a_14.wav" },
+  { id: "v56", image: "./samples/image/2_em/i_15.jpg", audio: "./samples/audio/2_em/a_15.wav" },
+  { id: "v57", image: "./samples/image/2_em/i_16.jpg", audio: "./samples/audio/2_em/a_16.wav" },
+  { id: "v58", image: "./samples/image/2_em/i_17.jpg", audio: "./samples/audio/2_em/a_17.wav" },
+  { id: "v59", image: "./samples/image/2_em/i_18.jpg", audio: "./samples/audio/2_em/a_18.wav" },
+  { id: "v60", image: "./samples/image/2_em/i_19.jpg", audio: "./samples/audio/2_em/a_19.wav" }
+];
+
+
+/********************************************************
+ * VARIABLES
+ ********************************************************/
+
+let trials = [];
+let pageIndex = 0;
+let results = [];
+
+/********************************************************
+ * FUNCTIONS
+ ********************************************************/
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+/* participant-wise randomization */
+if (sessionStorage.getItem("ai_mos_trials")) {
+  trials = JSON.parse(sessionStorage.getItem("ai_mos_trials"));
+} else {
+  trials = stimuli.slice();
+  shuffle(trials);
+  sessionStorage.setItem("ai_mos_trials", JSON.stringify(trials));
+}
+
+function createMosBlock(namePrefix) {
+  const frag = document.createDocumentFragment();
+  for (let score = 5; score >= 1; score--) {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = namePrefix;
+    input.value = score;
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(" " + score));
+    frag.appendChild(label);
+  }
+  return frag;
+}
+
+function loadPage() {
+  const container = document.getElementById("container");
+  container.innerHTML = "";
+
+  const start = pageIndex * ITEMS_PER_PAGE;
+  const current = trials.slice(start, start + ITEMS_PER_PAGE);
+
+  current.forEach((t, idx) => {
+
+    const block = document.createElement("div");
+    block.className = "stimulus";
+
+    const title = document.createElement("h4");
+    title.textContent = `Item ${start + idx + 1}`;
+    block.appendChild(title);
+
+    /* image */
+    const img = document.createElement("img");
+    img.src = t.image;
+    block.appendChild(img);
+
+    /* audio */
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = t.audio;
+    block.appendChild(audio);
+
+    /* Audio quality */
+    const q1 = document.createElement("p");
+    q1.innerHTML = "<b>Audio quality:</b>";
+    block.appendChild(q1);
+    block.appendChild(createMosBlock(`quality_${t.id}`));
+
+    /* Relevance */
+    const q2 = document.createElement("p");
+    q2.innerHTML = "<b>Image–Audio relevance:</b>";
+    block.appendChild(q2);
+    block.appendChild(createMosBlock(`relevance_${t.id}`));
+
+    container.appendChild(block);
+  });
+}
+
+/********************************************************
+ * NEXT BUTTON
+ ********************************************************/
+
+document.getElementById("nextBtn").onclick = function () {
+
+  const start = pageIndex * ITEMS_PER_PAGE;
+  const current = trials.slice(start, start + ITEMS_PER_PAGE);
+
+  for (const t of current) {
+    const q = document.querySelector(`input[name="quality_${t.id}"]:checked`);
+    const r = document.querySelector(`input[name="relevance_${t.id}"]:checked`);
+
+    if (!q || !r) {
+      alert("Please rate both audio quality and relevance.");
+      return;
+    }
+
+    results.push({
+      stimulus: t.id,
+      audio_quality: q.value,
+      relevance: r.value,
+      page: pageIndex + 1
+    });
+  }
+
+  pageIndex++;
+
+  if (pageIndex * ITEMS_PER_PAGE < trials.length) {
+    loadPage();
+  } else {
+    finish();
+  }
+};
+
+/********************************************************
+ * FINISH & DOWNLOAD
+ ********************************************************/
+
+function finish() {
+  let csv = "stimulus,audio_quality,relevance,page\n";
+
+  results.forEach(r => {
+    csv += `${r.stimulus},${r.audio_quality},${r.relevance},${r.page}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "audio_image_mos_results.csv";
+  a.click();
+
+  document.body.innerHTML = "<h2>Thank you for your participation.</h2>";
+}
+
+loadPage();
+</script>
+
+</body>
+</html>
